@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Birthday JD Pixel Party 🎂</title>
+<title>Birthday Pixel Party 🎂</title>
 <style>
 *{box-sizing:border-box}body{margin:0;background:#080b16;color:#fff;font-family:monospace;overflow-x:hidden}
 .hidden{display:none!important}.screen{min-height:100vh;display:grid;place-items:center;padding:20px}
@@ -31,6 +31,29 @@ image-rendering:pixelated;display:grid;place-items:center;font-size:25px;box-sha
 .confetti{position:fixed;inset:0;pointer-events:none;overflow:hidden}.piece{position:absolute;width:8px;height:14px;animation:fall 2.4s linear forwards}
 @keyframes fall{to{transform:translateY(110vh) rotate(720deg);opacity:0}}
 #feedBtn{background:#ff7192}.small{font-size:12px}
+
+/* Pixel party animation upgrade */
+.party{height:650px}
+.member{width:76px;animation:floatPixel 2.8s ease-in-out infinite;animation-delay:calc(var(--i)*.07s)}
+.member:nth-child(odd){animation-duration:3.2s}
+.avatar{position:relative;overflow:visible;border-radius:2px;box-shadow:4px 0 #151a35,-4px 0 #151a35,0 4px #151a35,0 -4px #151a35,0 0 18px #6574ff55}
+.avatar.boy{background:#35508a}.avatar.girl{background:#7b467d}
+.avatar.boy:after,.avatar.girl:after{content:"";position:absolute;inset:5px;border:2px dotted #fff4;pointer-events:none}
+.member:hover .avatar{transform:scale(1.18);box-shadow:0 0 22px #8d99ff}
+@keyframes floatPixel{0%,100%{transform:translate(-50%,-50%) translateY(0)}50%{transform:translate(-50%,-50%) translateY(-8px)}}
+.center{z-index:5}
+.birthday-girl{position:relative;display:inline-block}
+.birthday-girl .crown{position:absolute;left:50%;top:-26px;transform:translateX(-50%);font-size:35px;animation:crownBounce 1s ease-in-out infinite}
+@keyframes crownBounce{50%{transform:translateX(-50%) translateY(-5px) rotate(-4deg)}}
+.smoke{position:absolute;left:50%;top:70px;transform:translateX(-50%);font-size:30px;opacity:0;pointer-events:none}
+.smoke.show{animation:smokeUp 2.2s ease-out forwards}
+@keyframes smokeUp{0%{opacity:.9;transform:translate(-50%,0) scale(.5)}100%{opacity:0;transform:translate(-50%,-100px) scale(2)}}
+.popper{position:fixed;top:-30px;font-size:30px;z-index:20;animation:popperFall 2.2s ease-out forwards;pointer-events:none}
+@keyframes popperFall{0%{opacity:0;transform:translateY(-30px) rotate(0)}15%{opacity:1}100%{opacity:1;transform:translateY(105vh) rotate(720deg)}}
+.burst{position:absolute;left:50%;top:50%;width:10px;height:10px;border-radius:50%;background:#ffd85c;animation:burst 1s ease-out forwards;pointer-events:none}
+@keyframes burst{to{transform:rotate(var(--a)) translateX(170px);opacity:0}}
+#cake{animation:cakeGlow 1.5s ease-in-out infinite}
+@keyframes cakeGlow{50%{filter:drop-shadow(0 0 30px #ffd75c)}}
 </style>
 </head>
 <body>
@@ -56,12 +79,16 @@ image-rendering:pixelated;display:grid;place-items:center;font-size:25px;box-sha
     </div>
   </div>
 
-  <h1 id="title">Happy Birthday! Our Dear JD 🎂</h1>
+  <h1 id="title">Happy Birthday! 🎂</h1>
   <p id="subtitle">Everyone around the cake — tap the cake 3 times!</p>
 
   <section class="party" id="party">
     <div class="center">
-      <div id="cake" class="cake">🎂</div>
+      <div class="birthday-girl">
+  <div class="crown">👑</div>
+  <div id="cake" class="cake">👩🏻‍🎤🎂</div>
+  <div id="smoke" class="smoke">☁️☁️☁️</div>
+</div>
       <div id="hint" class="hint">Tap the cake <span class="count">3</span> times</div>
       <button id="cakeBtn">TAP CAKE</button>
       <button id="feedBtn" class="hidden">🍰 Feed birthday person</button>
@@ -75,8 +102,8 @@ image-rendering:pixelated;display:grid;place-items:center;font-size:25px;box-sha
    Change these values for your birthday.
 */
 const CONFIG = {
-  password: "jd08",
-  birthdayName: "JAYADURA",
+  password: "birthday123",
+  birthdayName: "Birthday Star",
   // Put your MP3 in the same GitHub folder and name it birthday-song.mp3
   songFile: "birthday-song.mp3",
   members: [
@@ -95,17 +122,23 @@ $("song").src=CONFIG.songFile;
 $("memberCount").textContent=CONFIG.members.length;
 
 function makeParty(){
-  const party=$("party"), center=document.querySelector(".center");
+  const party=$("party");
   document.querySelectorAll(".member").forEach(x=>x.remove());
-  const rX=43, rY=43, n=CONFIG.members.length;
+  const boys=14, girls=17, n=CONFIG.members.length;
+  const rX=43, rY=43;
   CONFIG.members.forEach((name,i)=>{
     const a=(i/n)*Math.PI*2-Math.PI/2;
     const el=document.createElement("div");
     el.className="member";
+    el.style.setProperty("--i",i);
     el.style.left=(50+rX*Math.cos(a))+"%";
     el.style.top=(50+rY*Math.sin(a))+"%";
-    const avatar=document.createElement("div"); avatar.className="avatar";
-    avatar.textContent=["😀","😎","🥳","🤩","😄","🤗"][i%6];
+    const isBoy=i<boys;
+    const avatar=document.createElement("div");
+    avatar.className="avatar "+(isBoy?"boy":"girl");
+    avatar.textContent=isBoy
+      ? ["👦🏻","👨🏻","🧑🏻","👦🏽"][i%4]
+      : ["👧🏻","👩🏻","👧🏽","👩🏽"][i%4];
     const nm=document.createElement("div"); nm.className="name"; nm.textContent=name;
     el.append(avatar,nm); party.appendChild(el);
   });
@@ -156,7 +189,10 @@ async function blow(){
   }
 }
 function finishCake(){
-  blown=true; $("cake").textContent="🍰"; $("subtitle").textContent="Candles out! 🎉";
+  blown=true;
+  $("smoke").classList.add("show");
+  partyBurst();
+ $("cake").textContent="🍰"; $("subtitle").textContent="Candles out! 🎉";
   $("hint").textContent="Birthday cake time!";
   $("cakeBtn").classList.add("hidden"); $("feedBtn").classList.remove("hidden");
   confetti();
@@ -173,6 +209,22 @@ $("musicBtn").onclick=()=>{
 };
 $("resetBtn").onclick=()=>location.reload();
 
+function partyBurst(){
+  for(let k=0;k<14;k++){
+    const b=document.createElement("span"); b.className="burst";
+    b.style.setProperty("--a",(k*25.7)+"deg");
+    document.querySelector(".center").appendChild(b);
+    setTimeout(()=>b.remove(),1100);
+  }
+  for(let i=0;i<12;i++){
+    const p=document.createElement("div"); p.className="popper";
+    p.textContent=["🎉","🎊","✨","🟨","🟪"][i%5];
+    p.style.left=(5+Math.random()*90)+"%";
+    p.style.animationDelay=(Math.random()*.7)+"s";
+    document.body.appendChild(p);
+    setTimeout(()=>p.remove(),3200);
+  }
+}
 function confetti(){
   const c=$("confetti"); c.innerHTML="";
   for(let i=0;i<100;i++){
