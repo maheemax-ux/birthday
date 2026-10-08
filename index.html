@@ -1,0 +1,188 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Birthday Pixel Party 🎂</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#080b16;color:#fff;font-family:monospace;overflow-x:hidden}
+.hidden{display:none!important}.screen{min-height:100vh;display:grid;place-items:center;padding:20px}
+.card{background:#11182b;border:2px solid #5b6cff;border-radius:18px;padding:28px;box-shadow:0 0 35px #2737a055;max-width:520px;width:100%;text-align:center}
+h1{margin:0 0 12px;font-size:clamp(24px,6vw,42px)}p{color:#b9c0d9}
+input,button{font:inherit;border-radius:10px;border:0;padding:13px 16px}
+input{width:100%;background:#080d1c;color:#fff;border:1px solid #39446b;margin:8px 0}
+button{cursor:pointer;background:#6875ff;color:#fff;font-weight:bold;margin:6px}
+button:hover{filter:brightness(1.12)}.err{color:#ff7d96;min-height:22px}
+#app{min-height:100vh;position:relative;padding:20px;text-align:center;background:
+radial-gradient(circle at 50% 25%,#202d66 0,#0b1021 35%,#080b16 70%)}
+.top{max-width:1100px;margin:auto;display:flex;justify-content:space-between;gap:10px;align-items:center}
+.badge{padding:8px 12px;border:1px solid #3e4a77;border-radius:999px;color:#c9d0ee}
+.party{position:relative;max-width:950px;height:610px;margin:10px auto 0}
+.member{position:absolute;transform:translate(-50%,-50%);width:72px;font-size:10px}
+.avatar{width:52px;height:52px;margin:auto;background:#303b70;border:3px solid #8791ff;
+image-rendering:pixelated;display:grid;place-items:center;font-size:25px;box-shadow:0 0 0 3px #11182b}
+.name{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:5px;color:#e6e9ff}
+.center{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:270px}
+.cake{font-size:105px;line-height:1;filter:drop-shadow(0 0 18px #ffcf5c)}
+.cake.shake{animation:shake .3s}.flame{display:inline-block}
+.flame.off{opacity:0;transform:scale(.2)}@keyframes shake{25%{transform:translateX(-8px)}75%{transform:translateX(8px)}}
+.hint{font-size:13px;color:#aeb8dd;min-height:40px}.count{color:#ffd76a}
+#feed{animation:pop .5s}@keyframes pop{from{transform:scale(.5);opacity:0}to{transform:scale(1);opacity:1}}
+.confetti{position:fixed;inset:0;pointer-events:none;overflow:hidden}.piece{position:absolute;width:8px;height:14px;animation:fall 2.4s linear forwards}
+@keyframes fall{to{transform:translateY(110vh) rotate(720deg);opacity:0}}
+#feedBtn{background:#ff7192}.small{font-size:12px}
+</style>
+</head>
+<body>
+<div id="login" class="screen">
+  <div class="card">
+    <div style="font-size:50px">🎂</div>
+    <h1>Birthday Party</h1>
+    <p>Enter the party password to unlock the celebration.</p>
+    <input id="pw" type="password" placeholder="Password" autocomplete="off">
+    <button id="loginBtn">Unlock 🎉</button>
+    <div id="loginErr" class="err"></div>
+    <div class="small">Tip: change the password in the CONFIG section of this file.</div>
+  </div>
+</div>
+
+<main id="app" class="hidden">
+  <audio id="song" src="birthday-song.mp3" loop preload="auto"></audio>
+  <div class="top">
+    <div class="badge">🎈 <span id="memberCount">30</span> members</div>
+    <div>
+      <button id="musicBtn">🎵 Play song</button>
+      <button id="resetBtn">↻ Reset</button>
+    </div>
+  </div>
+
+  <h1 id="title">Happy Birthday! 🎂</h1>
+  <p id="subtitle">Everyone around the cake — tap the cake 3 times!</p>
+
+  <section class="party" id="party">
+    <div class="center">
+      <div id="cake" class="cake">🎂</div>
+      <div id="hint" class="hint">Tap the cake <span class="count">3</span> times</div>
+      <button id="cakeBtn">TAP CAKE</button>
+      <button id="feedBtn" class="hidden">🍰 Feed birthday person</button>
+    </div>
+  </section>
+  <div id="confetti" class="confetti"></div>
+</main>
+
+<script>
+/* ================= CONFIG =================
+   Change these values for your birthday.
+*/
+const CONFIG = {
+  password: "birthday123",
+  birthdayName: "Birthday Star",
+  // Put your MP3 in the same GitHub folder and name it birthday-song.mp3
+  songFile: "birthday-song.mp3",
+  members: [
+    "Member 01","Member 02","Member 03","Member 04","Member 05",
+    "Member 06","Member 07","Member 08","Member 09","Member 10",
+    "Member 11","Member 12","Member 13","Member 14","Member 15",
+    "Member 16","Member 17","Member 18","Member 19","Member 20",
+    "Member 21","Member 22","Member 23","Member 24","Member 25",
+    "Member 26","Member 27","Member 28","Member 29","Member 30"
+  ]
+};
+
+const $=id=>document.getElementById(id);
+$("title").textContent=`Happy Birthday, ${CONFIG.birthdayName}! 🎂`;
+$("song").src=CONFIG.songFile;
+$("memberCount").textContent=CONFIG.members.length;
+
+function makeParty(){
+  const party=$("party"), center=document.querySelector(".center");
+  document.querySelectorAll(".member").forEach(x=>x.remove());
+  const rX=43, rY=43, n=CONFIG.members.length;
+  CONFIG.members.forEach((name,i)=>{
+    const a=(i/n)*Math.PI*2-Math.PI/2;
+    const el=document.createElement("div");
+    el.className="member";
+    el.style.left=(50+rX*Math.cos(a))+"%";
+    el.style.top=(50+rY*Math.sin(a))+"%";
+    const avatar=document.createElement("div"); avatar.className="avatar";
+    avatar.textContent=["😀","😎","🥳","🤩","😄","🤗"][i%6];
+    const nm=document.createElement("div"); nm.className="name"; nm.textContent=name;
+    el.append(avatar,nm); party.appendChild(el);
+  });
+}
+makeParty();
+
+$("loginBtn").onclick=login;
+$("pw").addEventListener("keydown",e=>{if(e.key==="Enter")login()});
+function login(){
+  if($("pw").value===CONFIG.password){
+    $("login").classList.add("hidden"); $("app").classList.remove("hidden");
+    try{$("song").play().catch(()=>{})}catch(e){}
+  } else $("loginErr").textContent="Wrong password — try again.";
+}
+
+let taps=0, blown=false;
+$("cakeBtn").onclick=()=>{
+  if(blown)return;
+  taps++;
+  $("cake").classList.remove("shake"); void $("cake").offsetWidth; $("cake").classList.add("shake");
+  if(taps<3) $("hint").innerHTML=`Tap the cake <span class="count">${3-taps}</span> more time${3-taps===1?"":"s"}`;
+  if(taps===3) lightReady();
+};
+function lightReady(){
+  $("subtitle").textContent="Now blow the candles! 💨";
+  $("hint").textContent="Allow microphone access, then blow near your phone.";
+  $("cakeBtn").textContent="💨 Blow candles";
+  $("cakeBtn").onclick=blow;
+}
+async function blow(){
+  if(blown)return;
+  try{
+    const stream=await navigator.mediaDevices.getUserMedia({audio:true});
+    const ctx=new AudioContext(), src=ctx.createMediaStreamSource(stream), analyser=ctx.createAnalyser();
+    analyser.fftSize=512; src.connect(analyser); const data=new Uint8Array(analyser.fftSize);
+    let hits=0;
+    const check=()=>{
+      analyser.getByteTimeDomainData(data);
+      let sum=0; for(const v of data){let x=(v-128)/128;sum+=x*x}
+      const rms=Math.sqrt(sum/data.length);
+      if(rms>.16) hits++;
+      if(hits>=4){stream.getTracks().forEach(t=>t.stop());ctx.close();finishCake()}
+      else requestAnimationFrame(check);
+    }; check();
+  }catch(e){
+    $("hint").textContent="Microphone unavailable. Tap the button once to simulate the blow.";
+    $("cakeBtn").onclick=finishCake;
+  }
+}
+function finishCake(){
+  blown=true; $("cake").textContent="🍰"; $("subtitle").textContent="Candles out! 🎉";
+  $("hint").textContent="Birthday cake time!";
+  $("cakeBtn").classList.add("hidden"); $("feedBtn").classList.remove("hidden");
+  confetti();
+}
+$("feedBtn").onclick=()=>{
+  $("feedBtn").textContent="😋 Yummy!";
+  $("subtitle").textContent=`Happy Birthday, ${CONFIG.birthdayName}! ❤️`;
+  $("hint").innerHTML='<span id="feed">🍰 Cake piece delivered!</span>';
+  setTimeout(()=>{$("feedBtn").textContent="🍰 Feed again"},900);
+};
+$("musicBtn").onclick=()=>{
+  const s=$("song");
+  if(s.paused){s.play();$("musicBtn").textContent="🔊 Pause song"}else{s.pause();$("musicBtn").textContent="🎵 Play song"}
+};
+$("resetBtn").onclick=()=>location.reload();
+
+function confetti(){
+  const c=$("confetti"); c.innerHTML="";
+  for(let i=0;i<100;i++){
+    const p=document.createElement("i");p.className="piece";
+    p.style.left=Math.random()*100+"%";p.style.top=(-Math.random()*20)+"%";
+    p.style.animationDelay=Math.random()*1.2+"s";p.style.transform=`rotate(${Math.random()*360}deg)`;
+    c.appendChild(p);
+  }
+  setTimeout(()=>c.innerHTML="",4500);
+}
+</script>
+</body>
+</html>
